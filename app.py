@@ -6,8 +6,7 @@ import google.generativeai as genai
 st.set_page_config(
     page_title="Analista IA",
     page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
 # --- ESTILO VISUAL ---
@@ -29,38 +28,41 @@ st.markdown("""
         transform: translateY(-2px);
     }
     footer {visibility: hidden;}
-    .stTextInput>div>div>input {border-radius: 8px;}
+    header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
-# --- BARRA LATERAL ---
+# --- BARRA LATERAL (Agora só informativa) ---
 with st.sidebar:
-    st.header("🔐 Acesso")
-    st.markdown("---")
-    
-    # Única coisa que o usuário precisa preencher
-    api_key = st.text_input("Sua Chave Google API:", type="password")
-    
-    st.markdown("###")
-    st.info("ℹ️ **Como funciona:** O sistema utiliza o motor neural *Gemini 2.5 Flash* para ler documentos contábeis complexos em segundos.")
-    
+    st.image("https://cdn-icons-png.flaticon.com/512/3309/3309991.png", width=50)
+    st.header("Financial AI")
+    st.info("ℹ️ **Sistema Autônomo:** Este software utiliza processamento neural avançado para auditar balanços automaticamente.")
     st.divider()
-    st.caption("v1.1 | Enterprise Edition")
+    st.caption("Enterprise Edition v2.0")
 
 # --- CORPO PRINCIPAL ---
 st.title("📊 Financial Intelligence AI")
 st.markdown("#### Análise Fundamentalista de Balanços Trimestrais")
 st.markdown("---")
 
-# Definição Silenciosa do Modelo (O usuário não vê, mas o código usa o melhor)
+# --- CONFIGURAÇÃO AUTOMÁTICA DA IA (O SEGREDO) ---
+# Aqui ele tenta pegar a chave do cofre do Streamlit
+try:
+    api_key = st.secrets["GOOGLE_API_KEY"]
+except:
+    st.error("⚠️ Erro de Configuração: Chave de API não encontrada no servidor.")
+    st.stop()
+
+# Modelo fixo no melhor disponível
 MODELO_ESCOLHIDO = "models/gemini-2.5-flash"
 
+# --- ÁREA DE UPLOAD ---
 uploaded_file = st.file_uploader("📂 Arraste o Release de Resultados (PDF) aqui", type="pdf")
 
-if uploaded_file and api_key:
-    with st.status("Processando documento...", expanded=True) as status:
+if uploaded_file:
+    with st.status("Iniciando protocolos de análise...", expanded=True) as status:
         try:
-            st.write("Leitura do arquivo PDF...")
+            st.write("Extraindo dados do documento...")
             reader = PdfReader(uploaded_file)
             text = ""
             for page in reader.pages:
@@ -70,12 +72,12 @@ if uploaded_file and api_key:
             genai.configure(api_key=api_key)
             model = genai.GenerativeModel(MODELO_ESCOLHIDO)
             
-            status.update(label="Pronto para análise!", state="complete", expanded=False)
+            status.update(label="Análise pronta para geração!", state="complete", expanded=False)
             
             st.markdown("###")
             if st.button("GERAR RELATÓRIO DE INTELIGÊNCIA 🚀"):
                 
-                with st.spinner('Examinando indicadores financeiros...'):
+                with st.spinner('Processando indicadores financeiros e auditoria de texto...'):
                     prompt = f"""
                     ATUAR COMO: Senior Equity Research Analyst (Buy Side).
                     TAREFA: Analise o texto financeiro abaixo e gere um relatório executivo.
@@ -127,6 +129,3 @@ if uploaded_file and api_key:
                         
         except Exception as e:
             st.error(f"Erro na leitura do PDF: {e}")
-
-elif not api_key:
-    st.info("👈 Insira sua Chave de API no menu lateral para liberar o sistema.")
