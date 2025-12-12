@@ -9,10 +9,10 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- ESTILO VISUAL (MANTIDO) ---
+# --- ESTILO VISUAL (CORREÇÃO DE CONTRASTE) ---
 st.markdown("""
 <style>
-    /* CSS para o Botão */
+    /* CSS para o Botão (Mantido) */
     .stButton>button {
         background-color: #004080;
         color: white;
@@ -31,20 +31,23 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
 
-    /* Novo CSS para os Cards de Introdução (Estilo limpo) */
+    /* CORREÇÃO CRÍTICA DO CARD (Garante contraste e estabilidade) */
     .intro-card {
-        background-color: #FFFFFF;
+        background-color: var(--secondary-background-color); /* Usa a cor de fundo do Streamlit (muda com o tema) */
         padding: 15px;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-        border: 1px solid #E0E0E0;
-        min-height: 150px; /* Garante que todos tenham a mesma altura */
+        border: 1px solid var(--border-color); /* Usa a cor de borda do tema */
+        min-height: 150px;
         text-align: center;
     }
     .intro-card h4 {
-        color: #004080; /* Título em azul */
+        color: var(--text-color); /* Usa a cor do texto do tema */
         font-weight: 600;
         margin-top: 5px;
+    }
+    .intro-card p {
+        color: var(--text-color); /* Garante que o parágrafo também use a cor do tema */
     }
 </style>
 """, unsafe_allow_html=True)
@@ -68,10 +71,11 @@ st.markdown("### Sobre o Sistema")
 col1, col2, col3 = st.columns(3)
 
 with col1:
+    # Atenção: O texto dentro do card agora é texto simples (Markdown), não HTML, para herdar a cor nativa.
     st.markdown("""
         <div class="intro-card">
             <h4>1. Auditoria Neural</h4>
-            <p>Utilizamos o motor Gemini 2.5 de alta capacidade para ler e interpretar centenas de páginas de relatórios financeiros complexos em segundos.</p>
+            <p>Utilizamos o motor Gemini 2.5 de alta capacidade para ler e interpretar centenas de páginas de relatórios complexos em segundos.</p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -87,7 +91,7 @@ with col3:
     st.markdown("""
         <div class="intro-card">
             <h4>3. Relatórios Executivos</h4>
-            <p>Entregamos o veredito (COMPRA/VENDA/MANTER) e a justificativa em formato profissional, pronto para sua tomada de decisão.</p>
+            <p>Entregamos o veredito (COMPRA/VENDA/MANTER) e a justificativa em formato profissional, pronto para sua decisão.</p>
         </div>
     """, unsafe_allow_html=True)
 
