@@ -3,8 +3,9 @@ from PyPDF2 import PdfReader
 import google.generativeai as genai
 import time
 import re
+import os
 
-# --- 1. CONFIGURAÇÃO INICIAL E METADADOS ---
+# --- 1. CONFIGURAÇÃO INICIAL ---
 st.set_page_config(
     page_title="Financial Analyst AI",
     page_icon="💎",
@@ -12,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded" 
 )
 
-# --- 2. CSS DE NAVEGAÇÃO E ESTILO (O SEGREDO DA NAV-BAR) ---
+# --- 2. CSS DE ESTABILIDADE E CONTRASTE (O FIX FINAL) ---
 st.markdown("""
 <style>
     /* ---------------------------------------------------- */
@@ -21,34 +22,36 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
     .stApp {
-        background-color: #F8F9FA; /* Fundo cinza suave (Fintech) */
+        background-color: #F8F9FA; /* Fundo cinza suave */
         font-family: 'Inter', sans-serif;
+    }
+    
+    /* FIX: Garante que o texto seja legível (preto) no modo claro */
+    body, p, h1, h2, h3, h4, .stText {
+        color: #333333; 
     }
     
     /* ---------------------------------------------------- */
     /* 2. BARRA DE NAVEGAÇÃO SUPERIOR (Navbar) */
     /* ---------------------------------------------------- */
     .navbar {
-        background-color: #002B5B; /* Azul Institucional Escuro */
-        padding: 10px 0;
-        color: white;
-        margin: -20px -20px 30px -20px; /* Hack para ocupar a largura total */
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        display: flex;
-        align-items: center;
-        width: calc(100% + 40px);
+        background-color: #002B5B; /* Azul Institucional Forte */
+        padding: 15px 0;
+        margin: -20px -20px 30px -20px; 
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        width: 100vw; 
     }
     .navbar-content {
-        padding-left: 30px;
-        padding-right: 30px;
-        width: 100%;
+        max-width: 1200px; 
+        margin: auto;
+        padding: 0 20px;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
     .navbar h1 {
         margin: 0;
-        font-size: 24px;
+        font-size: 26px;
         font-weight: 700;
         color: #FFFFFF;
     }
@@ -59,13 +62,16 @@ st.markdown("""
     }
     
     /* ---------------------------------------------------- */
-    /* 3. ELEMENTOS INTERATIVOS E LIMPEZA */
+    /* 3. ELEMENTOS E CARDS */
     /* ---------------------------------------------------- */
-    /* Esconder o cabeçalho e rodapé Streamlit */
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
-    
-    /* Botão Principal Estilizado */
+    .stMetric {
+        background-color: white;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 5px solid #004D99; 
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
     .stButton>button {
         background-color: #007bff; 
         color: white;
@@ -73,16 +79,11 @@ st.markdown("""
         height: 55px;
         width: 100%;
         font-weight: 600;
-        font-size: 16px;
-        border: none;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        transition: all 0.3s;
     }
     .stButton>button:hover {
         background-color: #0056b3;
     }
 
-    /* Estilo do container de upload para parecer um card */
     [data-testid="stFileUploader"] {
         border: 2px dashed #D1D5DB;
         border-radius: 8px;
@@ -90,25 +91,20 @@ st.markdown("""
         background-color: white;
         box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
-
-    /* Estilo dos Cartões de Métrica */
-    .stMetric {
-        background-color: white;
-        padding: 15px;
-        border-radius: 8px;
-        border-left: 5px solid #004D99; /* Barra de cor sutil */
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
     
+    /* Limpeza */
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
+
 
 # --- INJEÇÃO DA BARRA DE NAVEGAÇÃO ---
 st.markdown(
     """
     <div class="navbar">
         <div class="navbar-content">
-            <h1>💎 Financial Intelligence AI</h1>
+            <h1><span style="color: #FFD700;">💎</span> Financial Intelligence AI</h1>
             <p>Auditoria & Research</p>
         </div>
     </div>
@@ -116,150 +112,121 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
 # --- 3. LÓGICA DE API (SECRETS) ---
 try:
-    api_key = st.secrets["GOOGLE_API_KEY"]
+    api_key = os.getenv("GOOGLE_API_KEY") or st.secrets["GOOGLE_API_KEY"]
 except:
     api_key = None
 
-# --- BARRA LATERAL (Informativa) ---
+if 'limite_excedido' not in st.session_state:
+    st.session_state.limite_excedido = False
+
+# --- BARRA LATERAL (Controles) ---
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/781/781760.png", width=60)
     st.title("Painel de Controle")
-    st.caption("Sistema de Auditoria de Balanços.")
+    st.caption("Acesso ao motor de análise neural.")
+    st.divider()
     
     if not api_key:
-        st.warning("⚠️ Chave de API não configurada. Insira manualmente:")
-        # Aqui, se o usuário não tiver acesso, ele pode tentar novamente
-        api_key = st.text_input("API Key (Manual):", type="password")
+        st.warning("⚠️ Chave de Servidor não encontrada.")
+        api_key = st.text_input("🔑 API Key (Manual):", type="password")
     else:
-        st.success("✅ Sistema operacional.")
+        st.success("✅ Servidor Operacional (Chave carregada).")
     
     st.divider()
-    st.info("💡 **Dica:** Use o menu (⋮) para mudar para o Modo Escuro (Dark Mode).")
+    st.info("💡 **Dica:** O sistema usa o modelo Gemini 2.5 Flash, ideal para volumes grandes de dados.")
+    st.caption("© 2025 Financial AI Ltd.")
 
 
 # --- 4. ÁREA PRINCIPAL ---
-
-# Destaques visuais para a ação
 st.subheader("Análise Fundamentalista Automatizada")
 st.markdown("Arraste o documento **Release de Resultados (ITR/DFP)** para iniciar a auditoria neural.")
 
-# Layout de Upload (sem o container extra para simplificar)
 uploaded_file = st.file_uploader("", type="pdf", label_visibility="collapsed")
 
 
-# --- 5. LÓGICA DE PROCESSAMENTO ---
-if uploaded_file and api_key:
+# --- INÍCIO DA LÓGICA DE PROCESSAMENTO ---
+if uploaded_file:
+    if not api_key:
+        st.error("🚨 Chave de API não configurada. Por favor, insira a chave no painel lateral para liberar o sistema.")
     
-    # Validação do limite de uso
-    if 'limite_excedido' in st.session_state and st.session_state.limite_excedido:
-        st.error("🚨 Limite de uso do Gemini excedido. Tente novamente mais tarde ou insira uma nova chave.")
-        st.stop()
+    elif st.session_state.limite_excedido:
+        st.error("🚨 Limite de uso da API excedido. Tente novamente mais tarde ou insira uma chave válida no painel lateral.")
         
-    # Status visual de análise
-    with st.status("🔍 Analisando documento...", expanded=True) as status:
-        try:
-            st.write("Extraindo texto do PDF...")
-            reader = PdfReader(uploaded_file)
-            text = ""
-            for page in reader.pages:
-                text += page.extract_text()
-            
-            st.write("Configurando motor neural...")
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel("models/gemini-2.5-flash")
-            
-            status.update(label="Documento pronto. Clique para gerar o relatório.", state="complete", expanded=False)
-
-        except Exception as e:
-            st.session_state.limite_excedido = True
-            st.error(f"⚠️ Erro na API (Limite/Chave Inválida): {e}")
-            st.stop()
-
-
-    # Botão de Ação
-    st.markdown("###")
-    if st.button("GERAR RELATÓRIO EXECUTIVO 🚀"):
-        
-        # Simulação de Carregamento
-        my_bar = st.progress(0, text="Auditando Balanço...")
-        for percent_complete in range(100):
-            time.sleep(0.01)
-            my_bar.progress(percent_complete + 1, text="Processando indicadores e riscos...")
-        my_bar.empty()
-
-        # Prompt
-        prompt = f"""
-        ATUAR COMO: Senior Equity Research Analyst (Buy Side) com foco em detecção de risco. Sua missão é fornecer uma análise concisa, crítica e bem estruturada para um investidor.
-
-        GERE O RELATÓRIO EM MARKDOWN USANDO O SEGUINTE FORMATO:
-
-        ## 🎯 Veredito Executivo
-        **NOTA (0-10):** [Nota]
-        **RECOMENDAÇÃO:** [COMPRA / MANTER / VENDA]
-        > *"[Justificativa concisa em 2 linhas]"*
-
-        ---
-        ## 📊 Indicadores Financeiros (Tabela com Destaques)
-        | Indicador | Valor Atual | Variação (YoY) |
-        | :--- | :--- | :--- |
-        | Receita Líquida | ... | ... |
-        | EBITDA Ajustado | ... | ... |
-        | Margem Líquida | ... | ... |
-        | Dívida Líq/EBITDA | ... | ... |
-
-        ---
-        ## 🕵️ Auditoria de Risco & Qualidade do Lucro
-        * **Efeitos Não Recorrentes:** [Análise detalhada sobre itens não-caixa ou pontuais]
-        * **Qualidade do Lucro:** [O lucro é operacional ou contábil? Fundamente a resposta]
-        * **Fluxo de Caixa:** [A empresa gerou caixa (FCO) ou dependeu de financiamento?]
-
-        ## 🗣️ Análise de Discurso (Management)
-        [Resumo cético do que o CEO disse, destacando os desafios que foram suavizados]
-
-        ---
-        **DADOS BASE:**
-        {text[:50000]}
-        """
-
-        try:
-            with st.spinner('Gerando o relatório...'):
-                response = model.generate_content(prompt)
-            
-            relatorio = response.text
-            
-            # --- EXIBIÇÃO AVANÇADA DO RESULTADO ---
-            st.markdown("---")
-            
-            # Extração de Métricas (Para Cartões de Destaque)
-            nota_match = re.search(r'\*\*NOTA \(0-10\):\*\* (\d+)', relatorio)
-            rec_match = re.search(r'\*\*RECOMENDAÇÃO:\*\* (COMPRA|MANTER|VENDA)', relatorio)
-            
-            if nota_match and rec_match:
-                nota = nota_match.group(1)
-                recomendacao = rec_match.group(1)
+    else:
+        # --- Lógica de Leitura e Configuração ---
+        with st.status("🔍 Iniciando protocolos de análise...", expanded=True) as status:
+            try:
+                st.write("Extraindo texto do PDF...")
+                reader = PdfReader(uploaded_file)
+                text = "".join(page.extract_text() for page in reader.pages)
                 
-                c1, c2, c3 = st.columns(3)
+                st.write("Configurando motor neural...")
+                genai.configure(api_key=api_key)
+                model = genai.GenerativeModel("models/gemini-2.5-flash")
                 
-                with c1: st.metric("Nota do Analista", f"{nota}/10", delta_color="off")
-                with c2: st.metric("Recomendação", recomendacao)
-                with c3: st.metric("Motor de Análise", "Gemini 2.5 Flash")
+                status.update(label="Documento processado. Clique para gerar o relatório.", state="complete", expanded=False)
+
+            except Exception as e:
+                st.error(f"⚠️ Erro Crítico durante a leitura ou configuração: {e}")
+                st.stop()
+
+        # Botão de Ação
+        st.markdown("###")
+        if st.button("GERAR RELATÓRIO EXECUTIVO 🚀"):
             
-            # Relatório Detalhado
-            st.markdown("---")
-            st.subheader("📑 Relatório Detalhado")
-            st.markdown(relatorio)
+            # Simulação de Carregamento (UX)
+            my_bar = st.progress(0, text="Auditando Balanço...")
+            for percent_complete in range(100):
+                time.sleep(0.01)
+                my_bar.progress(percent_complete + 1, text="Processando indicadores e riscos...")
+            my_bar.empty()
 
-            st.warning("⚖️ Disclaimer: Análise gerada por IA. Não constitui recomendação de investimento.")
+            # O PROMPT FINAL É GERADO AQUI
+            try:
+                from analyst_prompt import gerar_prompt_final
+                prompt_final = gerar_prompt_final(text)
+            except ImportError:
+                st.error("ERRO: Arquivo 'analyst_prompt.py' não encontrado. Recarregue o código.")
+                st.stop()
 
-        except Exception as e:
-            st.error(f"Erro na API: {e}")
+            try:
+                with st.spinner('Gerando o relatório...'):
+                    response = model.generate_content(prompt_final)
+                
+                relatorio = response.text
+                st.session_state.limite_excedido = False 
+                
+                # --- EXIBIÇÃO AVANÇADA DO RESULTADO (Cartões de Métrica) ---
+                st.markdown("---")
+                
+                # Regex para extrair nota e recomendação
+                nota_match = re.search(r'\*\*NOTA \(0-10\):\*\* (\d+)', relatorio)
+                rec_match = re.search(r'\*\*RECOMENDAÇÃO:\*\* (COMPRA|MANTER|VENDA)', relatorio)
+                
+                if nota_match and rec_match:
+                    nota = nota_match.group(1)
+                    recomendacao = rec_match.group(1)
+                    
+                    c1, c2, c3 = st.columns(3)
+                    
+                    with c1: st.metric("Nota do Analista", f"{nota}/10", delta_color="off")
+                    with c2: st.metric("Recomendação", recomendacao)
+                    with c3: st.metric("Motor de Análise", "Gemini 2.5 Flash")
+                
+                # Relatório Detalhado
+                st.markdown("---")
+                st.markdown('<div class="css-card">', unsafe_allow_html=True)
+                st.subheader("📑 Relatório Detalhado")
+                st.markdown(relatorio)
+                st.markdown('</div>', unsafe_allow_html=True)
 
-elif uploaded_file and not api_key:
-    st.error("⚠️ Chave de API não configurada. Por favor, insira no menu lateral (Sidebar).")
+                st.warning("⚖️ Disclaimer: Análise gerada por IA. Não constitui recomendação de investimento.")
+
+            except Exception as e:
+                st.session_state.limite_excedido = True
+                st.error(f"🚨 Erro de Execução: {e}")
 
 elif not uploaded_file:
-    # Instruções visuais de como usar o site
-    st.info("O site está pronto para uso! Após resolver o limite da API, insira o PDF e gere seu primeiro relatório.")
+    st.info("O sistema está online. Insira o PDF para gerar seu primeiro relatório de auditoria.")
+    
