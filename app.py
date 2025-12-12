@@ -4,7 +4,7 @@ import google.generativeai as genai
 import time
 import re
 
-# --- 1. CONFIGURAÇÃO INICIAL (LAYOUT WIDE É PROFISSIONAL) ---
+# --- 1. CONFIGURAÇÃO INICIAL E METADADOS ---
 st.set_page_config(
     page_title="Financial Analyst AI",
     page_icon="💎",
@@ -12,10 +12,60 @@ st.set_page_config(
     initial_sidebar_state="expanded" 
 )
 
-# --- 2. CSS SIMPLES E SEGURO (Apenas botão e rodapé) ---
+# --- 2. CSS DE NAVEGAÇÃO E ESTILO (O SEGREDO DA NAV-BAR) ---
 st.markdown("""
 <style>
-    /* Estilo do Botão Principal */
+    /* ---------------------------------------------------- */
+    /* 1. ESTILO GERAL E FONTES */
+    /* ---------------------------------------------------- */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+    .stApp {
+        background-color: #F8F9FA; /* Fundo cinza suave (Fintech) */
+        font-family: 'Inter', sans-serif;
+    }
+    
+    /* ---------------------------------------------------- */
+    /* 2. BARRA DE NAVEGAÇÃO SUPERIOR (Navbar) */
+    /* ---------------------------------------------------- */
+    .navbar {
+        background-color: #002B5B; /* Azul Institucional Escuro */
+        padding: 10px 0;
+        color: white;
+        margin: -20px -20px 30px -20px; /* Hack para ocupar a largura total */
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        width: calc(100% + 40px);
+    }
+    .navbar-content {
+        padding-left: 30px;
+        padding-right: 30px;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .navbar h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 700;
+        color: #FFFFFF;
+    }
+    .navbar p {
+        margin: 0;
+        font-size: 14px;
+        color: #A0A0A0;
+    }
+    
+    /* ---------------------------------------------------- */
+    /* 3. ELEMENTOS INTERATIVOS E LIMPEZA */
+    /* ---------------------------------------------------- */
+    /* Esconder o cabeçalho e rodapé Streamlit */
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Botão Principal Estilizado */
     .stButton>button {
         background-color: #007bff; 
         color: white;
@@ -31,11 +81,41 @@ st.markdown("""
     .stButton>button:hover {
         background-color: #0056b3;
     }
+
+    /* Estilo do container de upload para parecer um card */
+    [data-testid="stFileUploader"] {
+        border: 2px dashed #D1D5DB;
+        border-radius: 8px;
+        padding: 20px;
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    /* Estilo dos Cartões de Métrica */
+    .stMetric {
+        background-color: white;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 5px solid #004D99; /* Barra de cor sutil */
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
     
-    /* Esconder o rodapé (Única interferência de design) */
-    footer {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
+
+# --- INJEÇÃO DA BARRA DE NAVEGAÇÃO ---
+st.markdown(
+    """
+    <div class="navbar">
+        <div class="navbar-content">
+            <h1>💎 Financial Intelligence AI</h1>
+            <p>Auditoria & Research</p>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 
 # --- 3. LÓGICA DE API (SECRETS) ---
 try:
@@ -46,48 +126,62 @@ except:
 # --- BARRA LATERAL (Informativa) ---
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/781/781760.png", width=60)
-    st.title("Financial AI")
+    st.title("Painel de Controle")
     st.caption("Sistema de Auditoria de Balanços.")
     
     if not api_key:
-        st.warning("⚠️ Chave de API não encontrada.")
+        st.warning("⚠️ Chave de API não configurada. Insira manualmente:")
+        # Aqui, se o usuário não tiver acesso, ele pode tentar novamente
         api_key = st.text_input("API Key (Manual):", type="password")
     else:
         st.success("✅ Sistema operacional.")
     
     st.divider()
-    # Este é o Dark Mode/Light Mode nativo!
-    st.info("💡 **Dica:** Use o menu (⋮) no canto superior direito para mudar para o **Modo Escuro (Dark Mode)**.")
+    st.info("💡 **Dica:** Use o menu (⋮) para mudar para o Modo Escuro (Dark Mode).")
 
 
-# --- 4. CABEÇALHO E UPLOAD ---
-st.title("Financial Intelligence AI")
-st.markdown("#### Auditoria de Balanços & Análise Fundamentalista Automatizada")
-st.markdown("---")
+# --- 4. ÁREA PRINCIPAL ---
 
-# Card de Upload (Usando container nativo, que é seguro)
-with st.container(border=True): # O border=True cria uma caixa nativa!
-    st.markdown("### 📂 Iniciar Nova Análise")
-    uploaded_file = st.file_uploader("Arraste o Release de Resultados (PDF) aqui", type="pdf", label_visibility="collapsed")
+# Destaques visuais para a ação
+st.subheader("Análise Fundamentalista Automatizada")
+st.markdown("Arraste o documento **Release de Resultados (ITR/DFP)** para iniciar a auditoria neural.")
+
+# Layout de Upload (sem o container extra para simplificar)
+uploaded_file = st.file_uploader("", type="pdf", label_visibility="collapsed")
 
 
 # --- 5. LÓGICA DE PROCESSAMENTO ---
 if uploaded_file and api_key:
     
+    # Validação do limite de uso
+    if 'limite_excedido' in st.session_state and st.session_state.limite_excedido:
+        st.error("🚨 Limite de uso do Gemini excedido. Tente novamente mais tarde ou insira uma nova chave.")
+        st.stop()
+        
+    # Status visual de análise
     with st.status("🔍 Analisando documento...", expanded=True) as status:
-        st.write("Extraindo texto do PDF...")
-        reader = PdfReader(uploaded_file)
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text()
-        
-        st.write("Configurando motor neural...")
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("models/gemini-2.5-flash")
-        
-        status.update(label="Documento pronto. Clique para gerar o relatório.", state="complete", expanded=False)
+        try:
+            st.write("Extraindo texto do PDF...")
+            reader = PdfReader(uploaded_file)
+            text = ""
+            for page in reader.pages:
+                text += page.extract_text()
+            
+            st.write("Configurando motor neural...")
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel("models/gemini-2.5-flash")
+            
+            status.update(label="Documento pronto. Clique para gerar o relatório.", state="complete", expanded=False)
 
-    if st.button("GERAR RELATÓRIO EXECUTIVO"):
+        except Exception as e:
+            st.session_state.limite_excedido = True
+            st.error(f"⚠️ Erro na API (Limite/Chave Inválida): {e}")
+            st.stop()
+
+
+    # Botão de Ação
+    st.markdown("###")
+    if st.button("GERAR RELATÓRIO EXECUTIVO 🚀"):
         
         # Simulação de Carregamento
         my_bar = st.progress(0, text="Auditando Balanço...")
@@ -98,7 +192,7 @@ if uploaded_file and api_key:
 
         # Prompt
         prompt = f"""
-        ATUAR COMO: Senior Equity Research Analyst (Buy Side). Sua missão é fornecer uma análise concisa, crítica e bem estruturada para um investidor.
+        ATUAR COMO: Senior Equity Research Analyst (Buy Side) com foco em detecção de risco. Sua missão é fornecer uma análise concisa, crítica e bem estruturada para um investidor.
 
         GERE O RELATÓRIO EM MARKDOWN USANDO O SEGUINTE FORMATO:
 
@@ -108,7 +202,7 @@ if uploaded_file and api_key:
         > *"[Justificativa concisa em 2 linhas]"*
 
         ---
-        ## 📊 Indicadores Financeiros (Destaques)
+        ## 📊 Indicadores Financeiros (Tabela com Destaques)
         | Indicador | Valor Atual | Variação (YoY) |
         | :--- | :--- | :--- |
         | Receita Líquida | ... | ... |
@@ -117,13 +211,13 @@ if uploaded_file and api_key:
         | Dívida Líq/EBITDA | ... | ... |
 
         ---
-        ## 🔎 Auditoria de Riscos
-        * **Efeitos Não Recorrentes:** [Análise]
-        * **Qualidade do Lucro:** [Operacional vs Contábil]
-        * **Geração de Caixa:** [Análise FCO]
+        ## 🕵️ Auditoria de Risco & Qualidade do Lucro
+        * **Efeitos Não Recorrentes:** [Análise detalhada sobre itens não-caixa ou pontuais]
+        * **Qualidade do Lucro:** [O lucro é operacional ou contábil? Fundamente a resposta]
+        * **Fluxo de Caixa:** [A empresa gerou caixa (FCO) ou dependeu de financiamento?]
 
-        ## 🗣️ Análise do Discurso
-        [Resumo cético do que o Management disse]
+        ## 🗣️ Análise de Discurso (Management)
+        [Resumo cético do que o CEO disse, destacando os desafios que foram suavizados]
 
         ---
         **DADOS BASE:**
@@ -139,7 +233,7 @@ if uploaded_file and api_key:
             # --- EXIBIÇÃO AVANÇADA DO RESULTADO ---
             st.markdown("---")
             
-            # 1. Cartões de Destaque
+            # Extração de Métricas (Para Cartões de Destaque)
             nota_match = re.search(r'\*\*NOTA \(0-10\):\*\* (\d+)', relatorio)
             rec_match = re.search(r'\*\*RECOMENDAÇÃO:\*\* (COMPRA|MANTER|VENDA)', relatorio)
             
@@ -151,9 +245,9 @@ if uploaded_file and api_key:
                 
                 with c1: st.metric("Nota do Analista", f"{nota}/10", delta_color="off")
                 with c2: st.metric("Recomendação", recomendacao)
-                with c3: st.metric("Modelo de IA", "Gemini 2.5")
+                with c3: st.metric("Motor de Análise", "Gemini 2.5 Flash")
             
-            # 2. Relatório Detalhado
+            # Relatório Detalhado
             st.markdown("---")
             st.subheader("📑 Relatório Detalhado")
             st.markdown(relatorio)
@@ -164,4 +258,8 @@ if uploaded_file and api_key:
             st.error(f"Erro na API: {e}")
 
 elif uploaded_file and not api_key:
-    st.error("⚠️ Chave de API não encontrada. Por favor, insira no menu lateral (Sidebar).")
+    st.error("⚠️ Chave de API não configurada. Por favor, insira no menu lateral (Sidebar).")
+
+elif not uploaded_file:
+    # Instruções visuais de como usar o site
+    st.info("O site está pronto para uso! Após resolver o limite da API, insira o PDF e gere seu primeiro relatório.")
