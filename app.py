@@ -4,16 +4,15 @@ import google.generativeai as genai
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
-    page_title="Analista IA Pro",
+    page_title="Analista IA",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded" # Força a barra lateral a começar aberta
+    initial_sidebar_state="expanded"
 )
 
-# --- ESTILO VISUAL (CSS SEGURO) ---
+# --- ESTILO VISUAL ---
 st.markdown("""
 <style>
-    /* Estilo do Botão Principal (Azul Profissional) */
     .stButton>button {
         background-color: #004080;
         color: white;
@@ -27,51 +26,38 @@ st.markdown("""
     }
     .stButton>button:hover {
         background-color: #003366;
-        box-shadow: 0px 6px 8px rgba(0,0,0,0.2);
         transform: translateY(-2px);
     }
-    
-    /* Apenas esconde o rodapé "Made with Streamlit", mas mantém o menu superior */
     footer {visibility: hidden;}
-    
-    /* Melhoria nas caixas de texto */
-    .stTextInput>div>div>input {
-        border-radius: 8px;
-    }
+    .stTextInput>div>div>input {border-radius: 8px;}
 </style>
 """, unsafe_allow_html=True)
 
-# --- BARRA LATERAL (Sidebar) ---
+# --- BARRA LATERAL ---
 with st.sidebar:
-    st.header("⚙️ Painel de Controle")
+    st.header("🔐 Acesso")
     st.markdown("---")
     
-    api_key = st.text_input("🔑 Chave Google API:", type="password")
+    # Única coisa que o usuário precisa preencher
+    api_key = st.text_input("Sua Chave Google API:", type="password")
     
-    st.markdown("### Configurações da IA")
-    # Seletor Manual (Segurança Máxima)
-    model_options = [
-        "models/gemini-2.5-flash", 
-        "models/gemini-2.0-flash",
-        "models/gemini-pro"
-    ]
-    model_name = st.selectbox("Motor de Análise:", model_options)
+    st.markdown("###")
+    st.info("ℹ️ **Como funciona:** O sistema utiliza o motor neural *Gemini 2.5 Flash* para ler documentos contábeis complexos em segundos.")
     
-    st.info("💡 **Dica:** O modelo '2.5-flash' é o mais rápido para balanços.")
     st.divider()
-    st.caption("v1.0.0 | Enterprise Edition")
+    st.caption("v1.1 | Enterprise Edition")
 
 # --- CORPO PRINCIPAL ---
-
 st.title("📊 Financial Intelligence AI")
 st.markdown("#### Análise Fundamentalista de Balanços Trimestrais")
 st.markdown("---")
 
-# Área de Upload
+# Definição Silenciosa do Modelo (O usuário não vê, mas o código usa o melhor)
+MODELO_ESCOLHIDO = "models/gemini-2.5-flash"
+
 uploaded_file = st.file_uploader("📂 Arraste o Release de Resultados (PDF) aqui", type="pdf")
 
 if uploaded_file and api_key:
-    # Container de Status visualmente agradável
     with st.status("Processando documento...", expanded=True) as status:
         try:
             st.write("Leitura do arquivo PDF...")
@@ -79,20 +65,17 @@ if uploaded_file and api_key:
             text = ""
             for page in reader.pages:
                 text += page.extract_text()
-            st.write(f"✅ Arquivo lido: {len(reader.pages)} páginas extraídas.")
             
-            st.write("Conectando ao motor neural do Google...")
+            st.write("Conectando ao motor neural...")
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel(model_name)
+            model = genai.GenerativeModel(MODELO_ESCOLHIDO)
             
-            status.update(label="Documento pronto! Clique no botão abaixo.", state="complete", expanded=False)
+            status.update(label="Pronto para análise!", state="complete", expanded=False)
             
-            # Botão de Ação Azul
             st.markdown("###")
             if st.button("GERAR RELATÓRIO DE INTELIGÊNCIA 🚀"):
                 
-                with st.spinner('O Analista Virtual está examinando os números...'):
-                    # PROMPT DE ELITE
+                with st.spinner('Examinando indicadores financeiros...'):
                     prompt = f"""
                     ATUAR COMO: Senior Equity Research Analyst (Buy Side).
                     TAREFA: Analise o texto financeiro abaixo e gere um relatório executivo.
@@ -130,11 +113,9 @@ if uploaded_file and api_key:
                     try:
                         response = model.generate_content(prompt)
                         
-                        # Exibição do Resultado
                         st.markdown("---")
                         st.subheader("📑 Relatório de Análise Fundamentalista")
                         
-                        # Container branco/cinza para destacar o texto
                         with st.container():
                             st.markdown(response.text)
                         
@@ -148,4 +129,4 @@ if uploaded_file and api_key:
             st.error(f"Erro na leitura do PDF: {e}")
 
 elif not api_key:
-    st.info("👈 Para começar, insira sua Chave de API no painel lateral.")
+    st.info("👈 Insira sua Chave de API no menu lateral para liberar o sistema.")
