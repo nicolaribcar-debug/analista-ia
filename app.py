@@ -9,9 +9,10 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- ESTILO VISUAL ---
+# --- ESTILO VISUAL (MANTIDO) ---
 st.markdown("""
 <style>
+    /* CSS para o Botão */
     .stButton>button {
         background-color: #004080;
         color: white;
@@ -29,6 +30,22 @@ st.markdown("""
     }
     footer {visibility: hidden;}
     header {visibility: hidden;}
+
+    /* Novo CSS para os Cards de Introdução (Estilo limpo) */
+    .intro-card {
+        background-color: #FFFFFF;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        border: 1px solid #E0E0E0;
+        min-height: 150px; /* Garante que todos tenham a mesma altura */
+        text-align: center;
+    }
+    .intro-card h4 {
+        color: #004080; /* Título em azul */
+        font-weight: 600;
+        margin-top: 5px;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -45,14 +62,35 @@ st.title("📊 Financial Intelligence AI")
 st.markdown("#### Análise Fundamentalista de Balanços Trimestrais")
 st.markdown("---")
 
-# --- NOVA SEÇÃO: 3 TÓPICOS SOBRE O SITE ---
+# --- NOVA SEÇÃO: 3 TÓPICOS EM CARDS SEPARADOS ---
 st.markdown("### Sobre o Sistema")
-st.markdown("""
-Esta ferramenta foi desenvolvida para acelerar a análise de mercado e focar no que realmente importa:
-* **Auditoria Neural:** Utilizamos o motor Gemini 2.5 para ler e interpretar centenas de páginas de relatórios complexos.
-* **Foco Cético:** A IA é treinada para ignorar o marketing e buscar por discrepâncias entre lucro contábil e geração de caixa.
-* **Relatórios Executivos:** Entregamos o veredito (COMPRA/VENDA/MANTER) e a justificativa em formato profissional, pronto para sua decisão.
-""")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown("""
+        <div class="intro-card">
+            <h4>1. Auditoria Neural</h4>
+            <p>Utilizamos o motor Gemini 2.5 de alta capacidade para ler e interpretar centenas de páginas de relatórios financeiros complexos em segundos.</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    st.markdown("""
+        <div class="intro-card">
+            <h4>2. Foco Cético (Risco)</h4>
+            <p>A IA é treinada para ignorar o marketing do CEO e focar em discrepâncias: lucro contábil vs. geração de caixa operacional.</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown("""
+        <div class="intro-card">
+            <h4>3. Relatórios Executivos</h4>
+            <p>Entregamos o veredito (COMPRA/VENDA/MANTER) e a justificativa em formato profissional, pronto para sua tomada de decisão.</p>
+        </div>
+    """, unsafe_allow_html=True)
+
 st.markdown("---")
 # --- FIM DA NOVA SEÇÃO ---
 
