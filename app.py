@@ -45,6 +45,18 @@ st.title("📊 Financial Intelligence AI")
 st.markdown("#### Análise Fundamentalista de Balanços Trimestrais")
 st.markdown("---")
 
+# --- NOVA SEÇÃO: 3 TÓPICOS SOBRE O SITE ---
+st.markdown("### Sobre o Sistema")
+st.markdown("""
+Esta ferramenta foi desenvolvida para acelerar a análise de mercado e focar no que realmente importa:
+* **Auditoria Neural:** Utilizamos o motor Gemini 2.5 para ler e interpretar centenas de páginas de relatórios complexos.
+* **Foco Cético:** A IA é treinada para ignorar o marketing e buscar por discrepâncias entre lucro contábil e geração de caixa.
+* **Relatórios Executivos:** Entregamos o veredito (COMPRA/VENDA/MANTER) e a justificativa em formato profissional, pronto para sua decisão.
+""")
+st.markdown("---")
+# --- FIM DA NOVA SEÇÃO ---
+
+
 # --- CONFIGURAÇÃO AUTOMÁTICA DA IA (O SEGREDO) ---
 # Aqui ele tenta pegar a chave do cofre do Streamlit
 try:
