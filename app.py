@@ -3,7 +3,7 @@ from PyPDF2 import PdfReader
 import google.generativeai as genai
 import time
 
-# --- 1. CONFIGURAÇÃO INICIAL (Obrigatório ser a primeira linha) ---
+# --- 1. CONFIGURAÇÃO INICIAL ---
 st.set_page_config(
     page_title="Analista IA - Enterprise",
     page_icon="💎",
@@ -11,21 +11,18 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- 2. CSS DE ELITE (A Mágica do Design) ---
+# --- 2. CSS PROFISSIONAL ---
 st.markdown("""
 <style>
-    /* Importando fonte profissional (Roboto/Inter) */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
-    /* Fundo Geral */
     .stApp {
-        background-color: #F4F6F9; /* Cinza gelo muito suave */
+        background-color: #F4F6F9;
         font-family: 'Inter', sans-serif;
     }
 
-    /* BARRA DE NAVEGAÇÃO SUPERIOR (NAVBAR) */
     .navbar {
-        background-color: #0E1117; /* Preto/Azul Profundo */
+        background-color: #0E1117;
         padding: 20px;
         border-radius: 0px 0px 15px 15px;
         color: white;
@@ -46,7 +43,6 @@ st.markdown("""
         color: #a0a0a0;
     }
 
-    /* ESTILO DOS CARDS (CAIXAS BRANCAS) */
     .css-card {
         background-color: white;
         padding: 25px;
@@ -56,9 +52,8 @@ st.markdown("""
         margin-bottom: 20px;
     }
 
-    /* BOTÃO ESTILIZADO */
     .stButton>button {
-        background-color: #2563EB; /* Azul Royal */
+        background-color: #2563EB;
         color: white;
         border-radius: 8px;
         height: 50px;
@@ -73,41 +68,34 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
 
-    /* LIMPEZA VISUAL */
-    header {visibility: hidden;} /* Esconde a barra colorida padrão do topo */
-    footer {visibility: hidden;} /* Esconde o rodapé */
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
     
-    /* Ajuste de Texto */
     h2, h3 {color: #1F2937;}
     p {color: #4B5563;}
     
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. LÓGICA DE API (Secrets ou Manual) ---
+# --- 3. LÓGICA DE API ---
 try:
     api_key = st.secrets["GOOGLE_API_KEY"]
 except:
-    # Fallback para teste local se não tiver secrets
     api_key = None
 
-# --- 4. BARRA LATERAL (MENU) ---
+# --- 4. BARRA LATERAL ---
 with st.sidebar:
     st.markdown("### ⚙️ Painel de Controle")
     
     if not api_key:
         api_key = st.text_input("🔑 API Key (Google):", type="password")
-        st.caption("Cole sua chave AIza... aqui se estiver rodando local.")
+        st.caption("Insira a chave manualmente se estiver rodando local.")
     
     st.info("💡 **Status:** Sistema Operacional")
     st.markdown("---")
-    st.markdown("**Sobre:**")
-    st.caption("Ferramenta de auditoria automatizada para investidores Buy Side. Utiliza LLMs para detectar riscos e validar teses.")
-    st.markdown("---")
     st.caption("© 2025 Financial AI Ltd.")
 
-# --- 5. CABEÇALHO PERSONALIZADO (HTML) ---
-# Isso substitui o st.title padrão que estava sumindo
+# --- 5. CABEÇALHO ---
 st.markdown("""
 <div class="navbar">
     <h1>🏛️ Financial Intelligence AI</h1>
@@ -116,8 +104,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- 6. ÁREA PRINCIPAL ---
-
-# Card de Upload (Container visual)
 with st.container():
     st.markdown('<div class="css-card">', unsafe_allow_html=True)
     st.markdown("### 📂 Nova Análise")
@@ -125,7 +111,6 @@ with st.container():
     uploaded_file = st.file_uploader("", type="pdf", label_visibility="collapsed")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# Se não tiver arquivo, mostra instruções bonitas
 if not uploaded_file:
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -135,9 +120,8 @@ if not uploaded_file:
     with col3:
         st.markdown('<div class="css-card"><h4>3. Relatório Pro</h4><p>Receba análise de valuation e riscos.</p></div>', unsafe_allow_html=True)
 
-# --- 7. PROCESSAMENTO E RESULTADO ---
+# --- 7. PROCESSAMENTO ---
 if uploaded_file and api_key:
-    # Mostra barra de status visual
     with st.status("🔍 Iniciando protocolos de análise...", expanded=True) as status:
         st.write("Leitura e extração de texto estruturado...")
         reader = PdfReader(uploaded_file)
@@ -151,10 +135,8 @@ if uploaded_file and api_key:
         
         status.update(label="Documento processado. Pronto para gerar.", state="complete", expanded=False)
 
-    # Botão de Ação
     if st.button("GERAR RELATÓRIO DE INTELIGÊNCIA 🚀"):
         
-        # Barra de progresso fake para dar sensação de trabalho pesado
         progress_text = "Auditando Balanço..."
         my_bar = st.progress(0, text=progress_text)
         for percent_complete in range(100):
@@ -162,7 +144,6 @@ if uploaded_file and api_key:
             my_bar.progress(percent_complete + 1, text="Processando indicadores e riscos...")
         my_bar.empty()
 
-        # Prompt
         prompt = f"""
         ATUAR COMO: Senior Equity Research Analyst (Buy Side).
         TAREFA: Analise o release abaixo.
@@ -203,7 +184,6 @@ if uploaded_file and api_key:
             with st.spinner('Escrevendo relatório...'):
                 response = model.generate_content(prompt)
             
-            # Resultado dentro de um Card Branco ("Papel")
             st.markdown("---")
             st.markdown('<div class="css-card">', unsafe_allow_html=True)
             st.markdown("## 📑 Relatório Final")
@@ -216,5 +196,7 @@ if uploaded_file and api_key:
             st.error(f"Erro na API: {e}")
 
 elif uploaded_file and not api_key:
-    st.error("⚠️ Chave de API não encontrada. Configure no Secrets ou na Barra Lateral."))
+    st.error("⚠️ Chave de API não encontrada. Configure no Secrets ou na Barra Lateral.")
+
+
 
